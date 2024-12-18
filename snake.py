@@ -138,7 +138,8 @@ def runGame():
     startY = CELL_HEIGHT // 2
     snakeCoords = [(startX, startY)]
     direction = random.choice([RIGHT, LEFT, UP, DOWN])
-    apple = getRandomLocation(snakeCoords)  # to be implemented
+    apples = [getRandomLocation(snakeCoords) for i in range(5)]  # to be implemented
+    score = 0
     
     # Event handling loop
     while True: 
@@ -147,13 +148,13 @@ def runGame():
             if event.type == QUIT:  
                 terminate()   # to be implemented pygame.quit() then sys.exit()
             elif event.type == KEYDOWN: 
-                if (event.key == K_LEFT or event.key == K_a): 
+                if direction != RIGHT and (event.key == K_LEFT or event.key == K_a): 
                     direction = LEFT  
-                elif (event.key == K_RIGHT or event.key == K_d):  
+                elif direction != LEFT and (event.key == K_RIGHT or event.key == K_d):  
                     direction = RIGHT  
-                elif (event.key == K_UP or event.key == K_w):  
+                elif direction != DOWN and (event.key == K_UP or event.key == K_w):  
                     direction = UP  
-                elif (event.key == K_DOWN or event.key == K_s):  
+                elif direction != UP and (event.key == K_DOWN or event.key == K_s):  
                     direction = DOWN 
                 elif event.key == K_ESCAPE:  
                     terminate()
@@ -162,7 +163,6 @@ def runGame():
             
         ## ~~~~~Game Logic section~~~~##
         # Move the snake (add a new head and remove the tail)
-        
         if direction == RIGHT:
             newHead = (snakeCoords[HEAD][X]+1, snakeCoords[HEAD][Y])
         elif direction == LEFT:
@@ -174,7 +174,27 @@ def runGame():
         
         snakeCoords.insert(0,newHead)
         # Check for collision If the snake collides what should it do
-        #       What is it colliding with ?
+        # What is it colliding with ?
+        if snakeCoords[HEAD][X] > CELL_WIDTH or snakeCoords[HEAD][X] < 0:
+            return
+        elif snakeCoords[HEAD][Y] > CELL_HEIGHT or snakeCoords[HEAD][Y] < 0:
+            return
+        #check for collision with it self
+        elif snakeCoords[HEAD] in snakeCoords[1:]:
+            return
+        #check for collision with apple
+        for apple in apples[:]:
+            if snakeCoords[HEAD] == apple:
+                apples.remove(apple)  #removes apple
+                apples.append(getRandomLocation(snakeCoords))  #adds new apple
+                score += 1
+                break
+        else:
+            snakeCoords.pop()  #keep same size
+
+
+
+
 
         
         
@@ -185,7 +205,8 @@ def runGame():
         
         drawGrid()
         drawSnake(snakeCoords)
-        drawApple(apple)
+        for apple in apples:
+            drawApple(apple)
         # drawScore 
         
         pygame.display.update()
